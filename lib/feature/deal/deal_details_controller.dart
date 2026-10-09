@@ -17,7 +17,8 @@ class DealDetailsController extends GetxController {
     required this.analytics,
   });
 
-  late final DealModel deal;
+  late DealModel deal;
+  final isLoading = true.obs;
 
   final _quantityLeft = RxnInt();
   int? get quantityLeft => _quantityLeft.value;
@@ -27,16 +28,36 @@ class DealDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    deal = Get.arguments as DealModel;
-    _quantityLeft.value = deal.quantityLeft;
-    analytics.logEvent('deal_details_view', {
-      'deal_id': deal.id,
-      'source': Get.parameters['source'] ?? 'unknown',
-    });
-    // Whenever the cart changes, re-check this deal's remaining stock so the
-    // details screen never shows stale availability.
+    final arguments = Get.arguments;
+    if (arguments is DealModel) {
+      deal = arguments;
+      _quantityLeft.value = deal.quantityLeft;
+      isLoading.value = false;
+      analytics.logEvent('deal_details_view', {
+        'deal_id': deal.id,
+        'source': Get.parameters['source'] ?? 'unknown',
+      });
+    } else {
+      _loadDealFromDeepLink();
+    }
+    // Whenever the cart changes, re-check this deal's remaining stock
+    // so the details screen never shows stale availability.
     _cartItemCountWorker =
         ever(cartService.itemCount, (_) => _recheckAvailability());
+  }
+
+  Future<void> _loadDealFromDeepLink() async {
+    try {
+      final id = int.parse(Get.parameters['id']!);
+      deal = await dealRepo.fetchById(id);
+      _quantityLeft.value = deal.quantityLeft;
+      analytics.logEvent('deal_details_view', {
+        'deal_id': deal.id,
+        'source': Get.parameters['source'] ?? 'unknown',
+      });
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> _recheckAvailability() async {
