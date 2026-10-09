@@ -9,8 +9,8 @@ class PickupWindowModel {
 
   factory PickupWindowModel.fromJson(Map<String, dynamic> json) {
     return PickupWindowModel(
-      start: DateTime.parse(json['start'] as String? ?? ''),
-      end: DateTime.parse(json['end'] as String? ?? ''),
+      start: DateTime.parse(json['start'] as String? ?? '').toLocal(),
+      end: DateTime.parse(json['end'] as String? ?? '').toLocal(),
     );
   }
 
@@ -19,12 +19,18 @@ class PickupWindowModel {
       '${DateFormat('HH:mm').format(start)} – ${DateFormat('HH:mm').format(end)}';
 
   /// Whether pickup starts today.
-  bool get isToday => start.day == DateTime.now().day;
+  bool get isToday {
+    final now = DateTime.now();
+    return start.year == now.year &&
+        start.month == now.month &&
+        start.day == now.day;
+  }
 
   /// Whether the store is currently accepting pickups.
   bool get isOpenNow {
     final now = DateTime.now();
-    return now.isAfter(start) && now.isBefore(end);
+    return (now.isAfter(start) || now.isAtSameMomentAs(start)) &&
+        (now.isBefore(end) || now.isAtSameMomentAs(end));
   }
 
   Duration get untilStart => start.difference(DateTime.now());
