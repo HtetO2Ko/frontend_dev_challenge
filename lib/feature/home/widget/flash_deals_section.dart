@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import './flash_deals_countdown.dart';
-import '../../../app_config.dart';
+import '../../../service/cart_service.dart';
+import '../../shared_widget/flash_deals_countdown.dart';
 import '../../../model/deal_model.dart';
 import '../../../routes/routes.dart';
 import '../../shared_widget/the_network_image.dart';
@@ -88,10 +88,17 @@ class FlashDealsSection extends StatelessWidget {
                                     Text('฿${deal.price.toStringAsFixed(0)}',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: AppConfig.primaryGreen)),
+                                            color: Color.fromRGBO(
+                                                47, 181, 124, 1))),
                                     const Spacer(),
                                     FlashDealCountdown(
                                       endsAt: deal.flashSaleEndsAt,
+                                      onExpired: () {
+                                        Get.find<CartService>().expireDeal(
+                                          deal.id,
+                                          dealName: deal.name,
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),

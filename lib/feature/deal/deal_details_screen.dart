@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../app_config.dart';
+import '../../model/deal_model.dart';
+import '../../service/cart_service.dart';
+import '../shared_widget/flash_deals_countdown.dart';
 import '../shared_widget/the_network_image.dart';
 import 'deal_details_controller.dart';
 
@@ -35,9 +37,25 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(deal.name,
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(deal.name,
+                            style: const TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                        deal.isFlashSale
+                            ? FlashDealCountdown(
+                                endsAt: deal.flashSaleEndsAt,
+                                onExpired: () {
+                                  Get.find<CartService>().expireDeal(
+                                    deal.id,
+                                    dealName: deal.name,
+                                  );
+                                },
+                              )
+                            : Container(),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text(deal.storeName,
                         style: TextStyle(
@@ -136,16 +154,39 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
         bottomSheet: Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           color: Colors.white,
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: controller.addToCart,
-              icon: const Icon(Icons.add_shopping_cart),
-              label: const Text('Add to bag'),
-            ),
+          child: _AddToBagButton(
+            deal: deal,
+            onAdd: controller.addToCart,
           ),
         ),
       );
     });
+  }
+}
+
+class _AddToBagButton extends StatelessWidget {
+  final DealModel deal;
+  final VoidCallback onAdd;
+
+  const _AddToBagButton({
+    required this.deal,
+    required this.onAdd,
+  });
+
+  bool get _expired {
+    final endsAt = deal.flashSaleEndsAt;
+    return endsAt != null && !endsAt.isAfter(DateTime.now());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: _expired ? null : onAdd,
+        icon: const Icon(Icons.add_shopping_cart),
+        label: Text(_expired ? 'Expired' : 'Add to bag'),
+      ),
+    );
   }
 }

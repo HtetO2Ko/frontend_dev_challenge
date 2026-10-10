@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import '../../app_config.dart';
 import '../../model/deal_model.dart';
 import '../../routes/routes.dart';
+import '../../service/cart_service.dart';
 import '../shared_widget/deal_impression_tracker.dart';
+import '../shared_widget/flash_deals_countdown.dart';
 import 'the_network_image.dart';
 
 /// Deal card used in the home feed and search results.
@@ -87,11 +89,27 @@ class DealCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(deal.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(deal.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600)),
+                        source == "home_feed" && deal.isFlashSale
+                            ? FlashDealCountdown(
+                                endsAt: deal.flashSaleEndsAt,
+                                onExpired: () {
+                                  Get.find<CartService>().expireDeal(
+                                    deal.id,
+                                    dealName: deal.name,
+                                  );
+                                },
+                              )
+                            : Container(),
+                      ],
+                    ),
                     const SizedBox(height: 2),
                     Text(deal.storeName,
                         maxLines: 1,

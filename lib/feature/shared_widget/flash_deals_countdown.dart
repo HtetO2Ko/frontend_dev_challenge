@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class FlashDealCountdown extends StatefulWidget {
+  final VoidCallback? onExpired;
   final DateTime? endsAt;
 
   const FlashDealCountdown({
     super.key,
     required this.endsAt,
+    this.onExpired,
   });
 
   @override
@@ -16,6 +18,7 @@ class FlashDealCountdown extends StatefulWidget {
 class _FlashDealCountdownState extends State<FlashDealCountdown> {
   Timer? _timer;
   late Duration _remaining;
+  bool _expirationNotified = false;
 
   bool get _expired => _remaining <= Duration.zero;
 
@@ -23,18 +26,21 @@ class _FlashDealCountdownState extends State<FlashDealCountdown> {
   void initState() {
     super.initState();
     _updateRemaining();
+    _notifyExpiredIfNeeded();
     _startTimerIfNeeded();
   }
 
   @override
-  void didUpdateWidget(
-    covariant FlashDealCountdown oldWidget,
-  ) {
+  void didUpdateWidget(covariant FlashDealCountdown oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.endsAt != widget.endsAt) {
       _timer?.cancel();
+      _timer = null;
+      _expirationNotified = false;
+
       _updateRemaining();
+      _notifyExpiredIfNeeded();
       _startTimerIfNeeded();
     }
   }
@@ -45,14 +51,32 @@ class _FlashDealCountdownState extends State<FlashDealCountdown> {
         endsAt == null ? Duration.zero : endsAt.difference(DateTime.now());
   }
 
+  void _notifyExpiredIfNeeded() {
+    if (!_expired || widget.endsAt == null || _expirationNotified) {
+      return;
+    }
+
+    _expirationNotified = true;
+    final callback = widget.onExpired;
+
+    if (callback == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      callback();
+    });
+  }
+
   void _startTimerIfNeeded() {
     if (_expired || widget.endsAt == null) return;
+
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (_) {
         if (!mounted) return;
 
         setState(_updateRemaining);
+        _notifyExpiredIfNeeded();
 
         if (_expired) {
           _timer?.cancel();
@@ -77,7 +101,6 @@ class _FlashDealCountdownState extends State<FlashDealCountdown> {
     }
 
     final totalMinutes = totalSeconds ~/ 60;
-
     return '${twoDigits(totalMinutes)}:'
         '${twoDigits(seconds)}';
   }
