@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-class FlashDealCountdown extends StatefulWidget {
+class TimerCountdown extends StatefulWidget {
   final VoidCallback? onExpired;
   final DateTime? endsAt;
 
-  const FlashDealCountdown({
+  const TimerCountdown({
     super.key,
     required this.endsAt,
     this.onExpired,
   });
 
   @override
-  State<FlashDealCountdown> createState() => _FlashDealCountdownState();
+  State<TimerCountdown> createState() => _FlashDealCountdownState();
 }
 
-class _FlashDealCountdownState extends State<FlashDealCountdown> {
+class _FlashDealCountdownState extends State<TimerCountdown> {
   Timer? _timer;
   late Duration _remaining;
   bool _expirationNotified = false;
@@ -31,7 +31,7 @@ class _FlashDealCountdownState extends State<FlashDealCountdown> {
   }
 
   @override
-  void didUpdateWidget(covariant FlashDealCountdown oldWidget) {
+  void didUpdateWidget(covariant TimerCountdown oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.endsAt != widget.endsAt) {

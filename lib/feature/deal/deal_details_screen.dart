@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../app_config.dart';
 import '../../model/deal_model.dart';
 import '../../service/cart_service.dart';
-import '../shared_widget/flash_deals_countdown.dart';
+import '../shared_widget/timer_countdown.dart';
 import '../shared_widget/the_network_image.dart';
 import 'deal_details_controller.dart';
 
@@ -44,7 +44,7 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
                             style: const TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.bold)),
                         deal.isFlashSale
-                            ? FlashDealCountdown(
+                            ? TimerCountdown(
                                 endsAt: deal.flashSaleEndsAt,
                                 onExpired: () {
                                   Get.find<CartService>().expireDeal(

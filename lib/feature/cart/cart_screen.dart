@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../app_config.dart';
-import '../shared_widget/flash_deals_countdown.dart';
+import '../shared_widget/timer_countdown.dart';
 import '../shared_widget/the_network_image.dart';
 import 'cart_controller.dart';
 
@@ -77,7 +77,7 @@ class CartScreen extends GetView<CartController> {
                                   ),
                                 )
                               else if (reservation != null)
-                                FlashDealCountdown(
+                                TimerCountdown(
                                   endsAt: reservation.expiresAt.toLocal(),
                                   onExpired: () {
                                     cart.remove(item.deal.id);

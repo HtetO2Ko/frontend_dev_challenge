@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../service/cart_service.dart';
-import '../../shared_widget/flash_deals_countdown.dart';
+import '../../shared_widget/timer_countdown.dart';
 import '../../../model/deal_model.dart';
 import '../../../routes/routes.dart';
 import '../../shared_widget/the_network_image.dart';
@@ -91,7 +91,7 @@ class FlashDealsSection extends StatelessWidget {
                                             color: Color.fromRGBO(
                                                 47, 181, 124, 1))),
                                     const Spacer(),
-                                    FlashDealCountdown(
+                                    TimerCountdown(
                                       endsAt: deal.flashSaleEndsAt,
                                       onExpired: () {
                                         Get.find<CartService>().expireDeal(
