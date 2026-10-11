@@ -32,7 +32,7 @@ class CartController extends GetxController {
             DateTime.now().toUtc().isAfter(item.reservation!.expiresAt));
         Get.snackbar(
           'Reservation expired',
-          'Some items in your bag expired during checkout. They have been removed.',
+          e.message,
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
