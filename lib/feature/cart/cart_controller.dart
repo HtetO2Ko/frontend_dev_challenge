@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import '../../repository/order_repo.dart';
 import '../../service/api_exception.dart';
 import '../../service/cart_service.dart';
@@ -26,11 +25,23 @@ class CartController extends GetxController {
       );
     } on ApiException catch (e) {
       LogService.error('checkout failed', e);
-      Get.snackbar(
-        'Checkout failed',
-        e.message,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      if (e.statusCode == 410) {
+        // Handle 410 reservation expired gracefully by refreshing cart / removing expired items
+        cartService.items.removeWhere((item) =>
+            item.reservation == null ||
+            DateTime.now().toUtc().isAfter(item.reservation!.expiresAt));
+        Get.snackbar(
+          'Reservation expired',
+          'Some items in your bag expired during checkout. They have been removed.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar(
+          'Checkout failed',
+          e.message,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
     isCheckingOut.value = false;
   }

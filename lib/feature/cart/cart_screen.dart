@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../app_config.dart';
+import '../shared_widget/flash_deals_countdown.dart';
 import '../shared_widget/the_network_image.dart';
 import 'cart_controller.dart';
 
@@ -22,6 +23,8 @@ class CartScreen extends GetView<CartController> {
           itemCount: cart.items.length,
           itemBuilder: (context, index) {
             final item = cart.items[index];
+            final reservation = item.reservation;
+
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               color: Colors.white,
@@ -45,17 +48,51 @@ class CartScreen extends GetView<CartController> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w600)),
+                                  fontSize: 14.5, fontWeight: FontWeight.w600)),
                           Text(item.deal.storeName,
                               style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: Colors.grey.shade600)),
+                                  fontSize: 12.5, color: Colors.grey.shade600)),
                           Text('฿${item.deal.price.toStringAsFixed(0)} each',
                               style: const TextStyle(
                                   fontSize: 13,
                                   color: AppConfig.primaryGreen,
                                   fontWeight: FontWeight.w600)),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.timer_outlined,
+                                size: 13,
+                                color: item.isReserving
+                                    ? Colors.orange
+                                    : Colors.grey.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              if (item.isReserving)
+                                Text(
+                                  'Reserving...',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                )
+                              else if (reservation != null)
+                                FlashDealCountdown(
+                                  endsAt: reservation.expiresAt.toLocal(),
+                                  onExpired: () {
+                                    cart.remove(item.deal.id);
+                                  },
+                                )
+                              else
+                                Text(
+                                  'No active hold',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -64,15 +101,19 @@ class CartScreen extends GetView<CartController> {
                         IconButton(
                           visualDensity: VisualDensity.compact,
                           icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () => cart.decrement(item.deal.id),
+                          onPressed: item.isReserving
+                              ? null
+                              : () => cart.decrement(item.deal.id),
                         ),
                         Text('${item.quantity}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold)),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
                           visualDensity: VisualDensity.compact,
                           icon: const Icon(Icons.add_circle_outline),
-                          onPressed: () => cart.add(item.deal),
+                          onPressed: item.isReserving
+                              ? null
+                              : () => cart.add(item.deal),
                         ),
                       ],
                     ),

@@ -22,10 +22,10 @@ Future<void> initDependencies() async {
     AnalyticsService(api: Get.find<FakeApiService>()),
     permanent: true,
   );
-  Get.put(CartService(), permanent: true);
   Get.lazyPut(() => DealRepo(api: Get.find()), fenix: true);
   Get.lazyPut(() => StoreRepo(api: Get.find()), fenix: true);
   Get.lazyPut(() => OrderRepo(api: Get.find()), fenix: true);
+  Get.put(CartService(orderRepo: Get.find<OrderRepo>()), permanent: true);
 }
 
 class RescuApp extends StatelessWidget {
